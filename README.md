@@ -5,13 +5,14 @@
 1. **Distribution de la cible supérieure à 0.551446 et inférieure à 18.406403.**  
    -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
 **Color code:**
-- :green_heart: Expected position for the exercise
-- :heart: Need to move in the direction of the ➡️ to get to the right position
+- 🔴: Distribution de la cible sur l'enesemble du jeu de donnée
+- 🟡: Evolution de la distribution cible au cours du temps [t;t+10000]
 
 
 <div align="center">
-  <img src="https://github.com/bossardl/CmapRegression/blob/master/histogram_evolution.mp4" alt="Evolution temproelle de la distribution" />
+  <img src="https://github.com/bossardl/CmapRegression/blob/master/histogram_evolution.gif" alt="Evolution temporelle de la distribution" style="width: 50%; max-width: 300px;" />
 </div>
+
 
 2. **Corrélations :**  
    - **Forte Corrélation :** X8 <-> X1 et X6 <-> X0  
