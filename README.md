@@ -14,9 +14,18 @@
 </div>
 
 
-2. **Corrélations :**  
-   - **Forte Corrélation :** X8 <-> X1 et X6 <-> X0  
-   - **Corrélation Modérée :** 0<->8<->6, 1<->2<->4<->6, 2<->5, 3<->5<->7, 5<->8, 7<->9  
+### 🔗 2. Detailed Correlations:
+- **Forte Corrélation:**
+  - **X8** ⟷ **X1**
+  - **X6** ⟷ **X0**
+
+- **Corrélation Modérée:**
+  - **X0** ⟷ **X8** ⟷ **X6**
+  - **X1** ⟷ **X2** ⟷ **X4** ⟷ **X6**
+  - **X2** ⟷ **X5**
+  - **X3** ⟷ **X5** ⟷ **X7**
+  - **X5** ⟷ **X8**
+  - **X7** ⟷ **X9**
    - **Faible corrélation entre la cible et les variables**
    - **Pas de motif périodique donc une transformation en ondelette ne semble pas une approche prometteuse.**
 
