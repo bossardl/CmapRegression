@@ -5,7 +5,7 @@
 1. **Distribution de la cible supérieure à 0.551446 et inférieure à 18.406403.**  
    -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
 **Color code:**
-- 🔴: Distribution de la cible sur l'enesemble du jeu de donnée
+- 🔴: Distribution de la cible sur l'ensemble du jeu de donnée
 - 🟡: Evolution de la distribution cible au cours du temps [t;t+10000]
 
 
