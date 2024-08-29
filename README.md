@@ -26,20 +26,21 @@
   - **X3** ⟷ **X5** ⟷ **X7**
   - **X5** ⟷ **X8**
   - **X7** ⟷ **X9**
-   - **Faible corrélation entre la cible et les variables**
-   - **Pas de motif périodique donc une transformation en ondelette ne semble pas une approche prometteuse.**
+- **Faible corrélation entre la cible et les variables**
 
-3. **Fréquences et autocorrélations n'ont pas abouti.**  
-   -> Suggère que la saisonnalité/périodicité n'est pas évidente.
+3. **Fréquences et autocorrélations n'ont pas abouti.**
+   -> Suggère que la saisonnalité/périodicité n'est pas évidente. \
+   Pas de motif périodique donc une transformation en ondelette ne semble **pas une approche prometteuse**.
+   
 
-4. **Composantes principales :**  
+5. **Composantes principales :**  
    - 3 CP > 15% après PCA  
    - Pas de clusters après projections sur 2 CP  
    - PC1: X0, X8, X1, X6 ont les plus gros coefficients (>0.3)
      
    -> **PCA ne permet pas d'expliquer la variance simplement, travailler avec les moments statistiques n'est pas prometteur.**
 
-5. **Clustering**
+6. **Clustering**
    - Pas de cluster identifiable avec K-Means 3,5,7.
 
      
