@@ -1,6 +1,7 @@
 # Analyse des données pour former des hypothèses et orienter le choix de modèle
 
 ### 1. Expertise sur les données 
+0. **Distribution des variables ressemble à une loi normale avec 100000 points de données et dim(X)=10**
 
 1. **Distribution de la cible supérieure à 0.551446 et inférieure à 18.406403.**  
    -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
@@ -64,20 +65,34 @@
 
 * baseline XGBoost: Performances avec des non-linéarité
 * MLP: Modèle plus profond pour capturer des relations plus complexes
-    - 9729  ok
-    - 625  ok
-    - 119  X
+
  
 ## 4. Résultats
-* baseline XGBoost: Limitations
+**Approche en rasoir d'Occam, du modèle le plus simple au plus complexe**
+
+| Model Type          | Train MSE | Val MSE  | Test MSE |
+|:-------------------:|:-------------:|:-----------:|:------------:|
+| Linear Regression   | 18.20     | 18.22    | 17.92    |
+| Ridge Regression    | 18.20     | 18.22    | 17.92    |
+| Lasso Regression    | 18.21     | 18.24    | 17.93    |
+| XGBOOST             | 0.0563    | 0.0212   | 0.1598   |
+| MLP (10k params)    | 7.942e-06 | **2.467e-05\***| 3.064e-05|
+| MLP (1k params)     | 6.843e-06 | 3.007e-05| 2.093e-05|
+| MLP (100 params)    | 8.413e-05 | 2.882e-04| 2.811e-04|
+
+
+
+*  Linear. Ridge Lasso Regression et XGBoost: Limitations
 -> Ne parvient pas à prédire la tail de la distribution
+
+* baseline Linear. Ridge Lasso Regression et XGBoost: Limitations
 
 * MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost
     - 9729  ok
     - 625  ok
     - 119  X
  
-    - 
+    
 ## 5. Discussion
 Découverte et questionnement:
 D'où proviennent les données générées?
