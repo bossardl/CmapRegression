@@ -1,11 +1,13 @@
 # Analyse des données pour former des hypothèses et orienter le choix de modèle
 
 ### 1. Expertise sur les données 
-0. **Distribution des variables ressemble à une loi normale avec 100000 points de données et dim(X)=10**
 
-1. **Distribution de la cible supérieure à 0.551446 et inférieure à 18.406403.**  
+1. Variables sont peu corrélées.
+2. Les variables sont distribuées selon une loi normale, la cible **n'est pas une loi normale**.
+3. **Distribution de la cible contient des valeurs supérieures à 0.551446 et inférieures à 18.406403.**  
    -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
-**Color code:**
+
+   **Color code:**
 - 🔴: Distribution de la cible sur l'ensemble du jeu de donnée
 - 🟡: Evolution de la distribution cible au cours du temps [t;t+10000]
 
@@ -15,7 +17,16 @@
 </div>
 
 
-### 🔗 2. Detailed Correlations:
+5. Pas de composantes principales qui explique plus de 30% de la variance du jeu de donnée
+6. Pas de tendances temporelle ou de pattern périodique
+
+
+
+
+
+### 🔗 2. Détail des Correlations:
+
+
 - **Forte Corrélation:**
   - **X8** ⟷ **X1**
   - **X6** ⟷ **X0**
@@ -48,7 +59,6 @@
 ### But: Investiguer la distribution de données à prédire
 
 * Pas de tendances d'évolution temporelle  
-  --> Hypothèse: 
 
 ## 2. Détermination des hypothèses de travail
 - Hypothèse:  
@@ -88,8 +98,8 @@
 * baseline Linear. Ridge Lasso Regression et XGBoost: Limitations
 
 * MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost
-    - 9729  ok
-    - 625  ok
+    - **\*9729**  best
+    - 625  X
     - 119  X
  
     
