@@ -1,13 +1,13 @@
-# Analyse des données pour former des hypothèses et orienter le choix de modèle
+# Analyse des données pour orienter le choix de modèle de regression
 
-### 1. Expertise sur les données 
+## 1. Expertise sur les données 
 
 1. Variables sont peu corrélées.
 2. Les variables sont distribuées selon une loi normale, la cible **n'est pas une loi normale**.
 3. **Distribution de la cible contient des valeurs supérieures à 0.551446 et inférieures à 18.406403.**  
    -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
 
-   **Color code:**
+      **Color code:**
 - 🔴: Distribution de la cible sur l'ensemble du jeu de donnée
 - 🟡: Evolution de la distribution cible au cours du temps [t;t+10000]
 
@@ -16,15 +16,14 @@
   <img src="https://github.com/bossardl/CmapRegression/blob/master/histogram_evolution.gif" alt="Evolution temporelle de la distribution" style="width: 50%; max-width: 300px;" />
 </div>
 
-
 5. Pas de composantes principales qui explique plus de 30% de la variance du jeu de donnée
 6. Pas de tendances temporelle ou de pattern périodique
 
 
 
 
-
-### 🔗 2. Détail des Correlations:
+## 2. Détail des méthodes d'analyses des données
+### 🔗 2.a Détail des Correlations:
 
 
 - **Forte Corrélation:**
@@ -40,19 +39,19 @@
   - **X7** ⟷ **X9**
 - **Faible corrélation entre la cible et les variables**
 
-3. **Fréquences et autocorrélations n'ont pas abouti.**
+### 2.b **Fréquences et autocorrélations n'ont pas abouti.**
    -> Suggère que la saisonnalité/périodicité n'est pas évidente. \
    Pas de motif périodique donc une transformation en ondelette ne semble **pas une approche prometteuse**.
    
 
-5. **Composantes principales :**  
+### 2.c **Composantes principales :**  
    - 3 CP > 15% après PCA  
    - Pas de clusters après projections sur 2 CP  
    - PC1: X0, X8, X1, X6 ont les plus gros coefficients (>0.3)
      
    -> **PCA ne permet pas d'expliquer la variance simplement, travailler avec les moments statistiques n'est pas prometteur.**
 
-6. **Clustering**
+### 2.d **Clustering**
    - Pas de cluster identifiable avec K-Means 3,5,7.
 
      
@@ -60,7 +59,7 @@
 
 * Pas de tendances d'évolution temporelle  
 
-## 2. Détermination des hypothèses de travail
+## 3. Détermination des hypothèses de travail
 - Hypothèse:  
   - **Échantillons {$\mathbf{X}_i$} sont indépendants à courte et longue distance**  
   - **Forte non linéarité**
@@ -71,14 +70,15 @@
   - Utilisation des données telles quelles
 
     
-## 3. Choix de modèles
+## 4. Choix de modèles
 
 * baseline XGBoost: Performances avec des non-linéarité
 * MLP: Modèle plus profond pour capturer des relations plus complexes
 
  
-## 4. Résultats
-**Approche en rasoir d'Occam, du modèle le plus simple au plus complexe**
+## 5. Résultats
+**Approche en rasoir d'Occam, du modèle le plus simple au plus complexe**  
+Méthode: Grid search sur les paramètres et cross-validation sur chaque modèle pour réduire la variance.  
 
 | Model Type          | Train MSE | Val MSE  | Test MSE |
 |:-------------------:|:-------------:|:-----------:|:------------:|
@@ -103,10 +103,12 @@
     - 119  X
  
     
-## 5. Discussion
-Découverte et questionnement:
-D'où proviennent les données générées?
+## 6. Discussion
+Questionnement:  
+D'où proviennent les données générées? Que peut représenter la cible ?
+De quelle distribution la cible est-elle tirée?  
 Quelle méthode de feature engineering aurait pu aider à trouver un modèle plus petit et performant?
 
-Découverte:
+Découverte:  
+Il semble y avoir 3 points particuliers autour de 0, 10 et 18 que les modèles ont du mal à générer. 
 Les plus petits modèles ont du mal à générer la tail de la distribution. 
