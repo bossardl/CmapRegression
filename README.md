@@ -61,7 +61,7 @@
 
 ## 3. Détermination des hypothèses de travail
 - Hypothèse:  
-  - **Échantillons {$\mathbf{X}_i$} sont indépendants à courte et longue distance**  
+  - **Les échantillons \( \mathbf{X}_i \) sont indépendants à courte et longue distance**
   - **Forte non linéarité**
   - **Réduction de dimension non efficace**
   - **la cible n'est pas une série temporelle**
@@ -87,7 +87,7 @@ Méthode: Grid search sur les paramètres et cross-validation sur chaque modèle
 | Lasso Regression    | 18.21     | 18.24    | 17.93    |
 | XGBOOST             | 0.0563    | 0.0212   | 0.1598   |
 | MLP (10k params)    | 7.942e-06 | **2.467e-05\***| 3.064e-05|
-| MLP (1k params)     | 6.843e-06 | 3.007e-05| 2.093e-05|
+| MLP (1k params)     | 6.843e-06 | 3.007e-05| **2.093e-05\***|
 | MLP (100 params)    | 8.413e-05 | 2.882e-04| 2.811e-04|
 
 
@@ -98,8 +98,8 @@ Méthode: Grid search sur les paramètres et cross-validation sur chaque modèle
 * baseline Linear. Ridge Lasso Regression et XGBoost: Limitations
 
 * MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost
-    - **\*9729**  best
-    - 625  X
+    - **\*9729**  best on validation
+    - **\*625**  best on test data -> Selected model
     - 119  X
  
     
