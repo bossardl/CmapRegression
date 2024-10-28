@@ -97,7 +97,8 @@ Méthode: Grid search sur les paramètres et cross-validation sur chaque modèle
 
 * baseline Linear. Ridge Lasso Regression et XGBoost: Limitations
 
-* MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost
+* MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost. \
+  Nombres de paramètres:
     - **\*9729**  best on validation
     - **\*625**  best on test data -> Selected model
     - 119  X
