@@ -61,7 +61,7 @@
 
 ## 3. Détermination des hypothèses de travail
 - Hypothèse:  
-  - **Les échantillons**   $$  \mathbf{X}_i  $$  **sont indépendants à courte et longue distance**
+  - **Les échantillons $`\mathbf{X}_i`$ sont indépendants à courte et longue distance**
   - **Forte non linéarité**
   - **Réduction de dimension non efficace**
   - **la cible n'est pas une série temporelle**
