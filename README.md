@@ -1,115 +1,88 @@
-# Analyse des données pour orienter le choix de modèle de regression
+# CmapRegression : prédire Y à partir de (X0, …, X9)
 
-## 1. Expertise sur les données 
+Exercice : 100 000 points synthétiques, 10 variables explicatives `X0…X9` et une cible `Y` (`regression.csv`). Il s'agit d'analyser les données puis de construire un modèle de prédiction de Y.
 
-1. Variables sont peu corrélées.
-2. Les variables sont distribuées selon une loi normale, la cible **n'est pas une loi normale**.
-3. **Distribution de la cible contient des valeurs supérieures à 0.551446 et inférieures à 18.406403.**  
-   -> Clipping artificiel après la synthèse, introduction de forte non-linéarité.
+## En bref
 
-      **Color code:**
-- 🔴: Distribution de la cible sur l'ensemble du jeu de donnée
-- 🟡: Evolution de la distribution cible au cours du temps [t;t+10000]
+Les dix variables sont gaussiennes et corrélées entre elles, mais elles n'ont que **9 degrés de liberté**. On les ramène à 9 composantes indépendantes (blanchiment), puis on **tourne cette base** pour qu'un seul axe porte toute l'information sur Y. Y s'écrit alors comme une fonction 1D d'une seule combinaison linéaire des variables :
 
+$$t = \beta^\top (X-\mu), \qquad Y = f(t)$$
 
-<div align="center">
-  <img src="https://github.com/bossardl/CmapRegression/blob/master/histogram_evolution.gif" alt="Evolution temporelle de la distribution" style="width: 50%; max-width: 300px;" />
-</div>
+Ici, $f$ est une courbe lisse avec un coude, modélisée par une spline cubique.
 
-5. Pas de composantes principales qui explique plus de 30% de la variance du jeu de donnée
-6. Pas de tendances temporelle ou de pattern périodique
+| Approche | Modèle | Paramètres | MSE test |
+|---|---|---:|---:|
+| Première approche | MLP | 625 | 2.1e-5 |
+| **Rotation de base** | **blanchiment + rotation supervisée + spline 1D** | **58** | **1.4e-6** |
 
+L'erreur obtenue correspond au **plancher de bruit** des données : $R^2_{test} = 0.99999994$, et la validation croisée à 5 plis donne une MSE de $1.41\times10^{-6} \pm 0.02\times10^{-6}$.
 
+## Contenu du dépôt
 
+| Fichier | Rôle |
+|---|---|
+| [`regression_rotation.ipynb`](regression_rotation.ipynb) | **Notebook principal** : analyse, rotation de base, modèle, validation, résidus |
+| [`basis_rotation.py`](basis_rotation.py) | Estimateur scikit-learn `RotatedSingleIndexRegressor` et fonctions utilitaires |
+| `regression.csv` | Données |
+| `analysis.ipynb`, `regression_mlp.ipynb`, `model*.pth`, `run/` | Première approche : analyse exploratoire, XGBoost et MLP (PyTorch) |
+| `requirements.txt` | Dépendances du notebook principal |
 
-## 2. Détail des méthodes d'analyses des données
-### 🔗 2.a Détail des Correlations:
+## Démarche
 
+1. **Analyse rapide.** Les $X_i$ sont gaussiennes (asymétrie et kurtosis ≈ 0). Y est bornée dans $[0.551, 18.406]$ et son histogramme a trois pics. Ce n'est **pas un écrêtage** : on ne trouve que 5 valeurs exactement au minimum et 2 au maximum.
+2. **Inter-corrélations, via le spectre et pas seulement les corrélations deux à deux.** La 10e valeur propre de la covariance vaut ≈ 4e-7, contre ≈ 8 pour la première. Une **contrainte linéaire exacte** relie les variables : X9 est une combinaison des 9 autres, avec $R^2 = 0.999997$. Les coefficients d'un modèle linéaire en X ne sont donc pas identifiables.
+3. **Blanchiment.** $Z = \Lambda^{-1/2}V^\top(X-\mu)$ donne 9 composantes décorrélées, donc indépendantes puisque les données sont gaussiennes. Mais pour des données gaussiennes, **toute rotation** de $Z$ reste indépendante. La PCA et l'ICA ne voient que X et ne peuvent pas désigner la « bonne » base : c'est Y qui doit choisir la rotation.
+4. **Rotation supervisée.** La *Sliced Inverse Regression* (SIR) donne une seule valeur propre non nulle (0.525, puis toutes < 0.001) : **Y ne dépend que d'une direction**. On complète cette direction en une base orthonormée (QR), puis on l'affine par Gauss-Newton. Dans la base tournée, l'axe 1 porte une courbe parfaite et les 8 autres axes sont du bruit indépendant de Y.
+5. **Forme de $f$.**
+   - Les trois pics de Y sont les extrema de $f$ ($f'=0$ en $t\approx-2.53$, $-0.11$ et $2.34$). Par changement de variable, $p_Y(y)=\sum_k \varphi(t_k)/|f'(t_k)|$ diverge en ces points.
+   - $f$ présente un **coude** en $t\approx0.275$ ($y\approx3.0$) : elle reste continue, mais sa pente passe de 14.6 à 9.8.
+   - Aucune forme analytique simple n'a été trouvée. $f$ est donc modélisée par une spline cubique (40 nœuds, nœud triple au coude, prolongement linéaire hors du domaine).
+6. **Validation et résidus.** On utilise un découpage 70/15/15, une validation croisée à 5 plis et une comparaison à plusieurs modèles de référence. Les résidus sont proportionnels à $|f'(t)|$ : c'est un bruit gaussien sur l'indice, $y=f(t+\varepsilon)$ avec $\sigma_t\approx1.5\times10^{-4}$. La MSE attendue d'un prédicteur parfait, $\sigma_t^2\,\mathbb{E}[f'(t)^2]$, correspond à la MSE obtenue.
 
-- **Forte Corrélation:**
-  - **X8** ⟷ **X1**
-  - **X6** ⟷ **X0**
+## Résultats (même découpage, jeu de test de 15 000 points)
 
-- **Corrélation Modérée:**
-  - **X0** ⟷ **X8** ⟷ **X6**
-  - **X1** ⟷ **X2** ⟷ **X4** ⟷ **X6**
-  - **X2** ⟷ **X5**
-  - **X3** ⟷ **X5** ⟷ **X7**
-  - **X5** ⟷ **X8**
-  - **X7** ⟷ **X9**
-- **Faible corrélation entre la cible et les variables**
+| Modèle | MSE test |
+|---|---:|
+| Régression linéaire (X) | 1.8e+1 |
+| Polynôme de degré 2 (X) | 6.0e+0 |
+| Gradient boosting (X brut) | 2.5e-1 |
+| Gradient boosting (t seul) | 8.8e-3 |
+| Rotation + spline, sans coude (40 nœuds) | 2.6e-4 |
+| **Rotation + spline + coude (40 nœuds)** | **1.4e-6** |
 
-### 2.b **Fréquences et autocorrélations n'ont pas abouti.**
-   -> Suggère que la saisonnalité/périodicité n'est pas évidente. \
-   Pas de motif périodique donc une transformation en ondelette ne semble **pas une approche prometteuse**.
-   
+Rappel de la première approche (README précédent, **autre découpage**) : XGBoost obtenait une MSE test de 1.6e-1, le MLP à 9 729 paramètres 3.1e-5 et le MLP à 625 paramètres 2.1e-5.
 
-### 2.c **Composantes principales :**  
-   - 3 CP > 15% après PCA  
-   - Pas de clusters après projections sur 2 CP  
-   - PC1: X0, X8, X1, X6 ont les plus gros coefficients (>0.3)
-     
-   -> **PCA ne permet pas d'expliquer la variance simplement, travailler avec les moments statistiques n'est pas prometteur.**
+## Utilisation
 
-### 2.d **Clustering**
-   - Pas de cluster identifiable avec K-Means 3,5,7.
+```bash
+pip install -r requirements.txt
+jupyter notebook regression_rotation.ipynb
+```
 
-     
-### But: Investiguer la distribution de données à prédire
+```python
+from basis_rotation import RotatedSingleIndexRegressor
 
-* Pas de tendances d'évolution temporelle  
+model = RotatedSingleIndexRegressor(n_knots=40, kinks="auto").fit(X_train, y_train)
+y_pred = model.predict(X_test)
+t = model.index(X_test)          # coordonnée sur l'axe informatif
+Z_rot = model.transform(X_test)  # 9 composantes indépendantes, colonne 0 = axe informatif
+model.coef_, model.kinks_, model.sir_eigvals_
+```
 
-## 3. Détermination des hypothèses de travail
-- Hypothèse:  
-  - **Les échantillons $`\mathbf{X}_i`$ sont indépendants à courte et longue distance**
-  - **Forte non linéarité**
-  - **Réduction de dimension non efficace**
-  - **la cible n'est pas une série temporelle**
+## Ce que cela change par rapport à la première analyse
 
-- Ingénierie des variables:
-  - Utilisation des données telles quelles
+| Hypothèse de la première analyse | Constat avec la rotation de base |
+|---|---|
+| Variables « peu corrélées » | Une contrainte linéaire exacte : X n'a que 9 degrés de liberté |
+| Bornes de Y dues à un *clipping* artificiel | Les bornes sont les extrema de $f$ |
+| Réduction de dimension non efficace (PCA) | La PCA, non supervisée, ne voit pas Y. Une réduction **supervisée** (SIR) ramène le problème à **1 dimension** |
+| Forte non-linéarité en dimension 10 | La non-linéarité est entièrement contenue dans une fonction 1D |
+| « 3 points particuliers autour de 0, 10 et 18 » | Ce sont les points stationnaires de $f$ |
+| « Quelle ingénierie de variables pour un modèle plus petit ? » | $t=\beta^\top(X-\mu)$ : 58 paramètres au lieu de 625 |
 
-    
-## 4. Choix de modèles
+## Questions ouvertes
 
-* baseline XGBoost: Performances avec des non-linéarité
-* MLP: Modèle plus profond pour capturer des relations plus complexes
-
- 
-## 5. Résultats
-**Approche en rasoir d'Occam, du modèle le plus simple au plus complexe**  
-Méthode: Grid search sur les paramètres et cross-validation sur chaque modèle pour réduire la variance.  
-
-| Model Type          | Train MSE | Val MSE  | Test MSE |
-|:-------------------:|:-------------:|:-----------:|:------------:|
-| Linear Regression   | 18.20     | 18.22    | 17.92    |
-| Ridge Regression    | 18.20     | 18.22    | 17.92    |
-| Lasso Regression    | 18.21     | 18.24    | 17.93    |
-| XGBOOST             | 0.0563    | 0.0212   | 0.1598   |
-| MLP (10k params)    | 7.942e-06 | **2.467e-05\***| 3.064e-05|
-| MLP (1k params)     | 6.843e-06 | 3.007e-05| **2.093e-05\***|
-| MLP (100 params)    | 8.413e-05 | 2.882e-04| 2.811e-04|
-
-
-
-*  Linear. Ridge Lasso Regression et XGBoost: Limitations
--> Ne parvient pas à prédire la tail de la distribution
-
-* baseline Linear. Ridge Lasso Regression et XGBoost: Limitations
-
-* MLP: Parvient à capturer l'ensemble de la distribution avec faible mse par rapport au XGBoost. \
-  Nombres de paramètres:
-    - **\*9729**  best on validation
-    - **\*625**  best on test data -> Selected model
-    - 119  X
- 
-    
-## 6. Discussion
-Questionnement:  
-D'où proviennent les données générées? Que peut représenter la cible ?
-De quelle distribution la cible est-elle tirée?  
-Quelle méthode de feature engineering aurait pu aider à trouver un modèle plus petit et performant?
-
-Découverte:  
-Il semble y avoir 3 points particuliers autour de 0, 10 et 18 que les modèles ont du mal à générer. 
-Les plus petits modèles ont du mal à générer la tail de la distribution. 
+- **Forme analytique de $f$** et origine du coude en $t\approx0.275$ : une définition par morceaux dans le générateur ?
+- **Origine du bruit** : $\sigma_t\approx1.5\times10^{-4}$ sur l'indice et ≈ 6e-4 le long de la direction contrainte de X.
+- **Extrapolation** : $t$ est observé dans $[-4.9, 4.2]$. Au-delà, le prolongement linéaire de $f$ est une hypothèse.
+- **Robustesse** : SIR suppose une loi elliptique de X. Si la loi de X changeait, il faudrait réestimer la direction.
