@@ -1,6 +1,6 @@
 # CmapRegression : prédire Y à partir de (X0, …, X9)
 
-Exercice : 100 000 points synthétiques, 10 variables explicatives `X0…X9` et une cible `Y` (`regression.csv`). Il s'agit d'analyser les données puis de construire un modèle de prédiction de Y.
+Exercice : 100 000 points synthétiques, 10 variables explicatives `X0…X9` et une cible `Y` (`data/regression.csv`). Il s'agit d'analyser les données puis de construire un modèle de prédiction de Y.
 
 ## En bref
 
@@ -19,13 +19,23 @@ L'erreur obtenue correspond au **plancher de bruit** des données : $R^2_{test} 
 
 ## Contenu du dépôt
 
-| Fichier | Rôle |
-|---|---|
-| [`regression_rotation.ipynb`](regression_rotation.ipynb) | **Notebook principal** : analyse, rotation de base, modèle, validation, résidus |
-| [`basis_rotation.py`](basis_rotation.py) | Estimateur scikit-learn `RotatedSingleIndexRegressor` et fonctions utilitaires |
-| `regression.csv` | Données |
-| `analysis.ipynb`, `regression_mlp.ipynb`, `model*.pth`, `run/` | Première approche : analyse exploratoire, XGBoost et MLP (PyTorch) |
-| `requirements.txt` | Dépendances du notebook principal |
+```text
+CmapRegression/
+├── data/
+│   └── regression.csv                     données (100 000 × 11)
+├── notebooks/
+│   ├── 01_analyse_exploratoire.ipynb      première approche : analyse exploratoire
+│   ├── 02_regression_mlp.ipynb            première approche : linéaire, XGBoost, MLP (PyTorch)
+│   └── 03_rotation_indice_unique.ipynb    notebook principal : rotation de base et modèle à indice unique
+├── src/
+│   └── basis_rotation.py                  estimateur scikit-learn RotatedSingleIndexRegressor
+├── models/                                poids des MLP de la première approche (*.pth)
+├── runs/                                  journaux TensorBoard des MLP
+├── assets/                                animation de la distribution de Y (gif, mp4)
+└── requirements.txt
+```
+
+Les notebooks s'exécutent depuis le dossier `notebooks/` : ils lisent `../data/` et importent `../src/`.
 
 ## Démarche
 
@@ -56,10 +66,15 @@ Rappel de la première approche (README précédent, **autre découpage**) : XGB
 
 ```bash
 pip install -r requirements.txt
-jupyter notebook regression_rotation.ipynb
+jupyter notebook notebooks/03_rotation_indice_unique.ipynb
 ```
 
+Les notebooks de la première approche demandent en plus `torch`, `xgboost` et `tensorboard`.
+
 ```python
+import sys
+sys.path.insert(0, "src")  # depuis la racine du dépôt
+
 from basis_rotation import RotatedSingleIndexRegressor
 
 model = RotatedSingleIndexRegressor(n_knots=40, kinks="auto").fit(X_train, y_train)
